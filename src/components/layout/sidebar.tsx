@@ -92,29 +92,27 @@ export function Sidebar() {
 
       <Separator />
 
-      {domains.length > 0 && (
-        <div className="px-3 py-2">
-          <Select
-            value={domain ?? "__all__"}
-            onValueChange={(v) => setDomain(v === "__all__" ? null : v)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Todos los dominios" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">Todos los dominios</SelectItem>
-              {domains.map((d) => (
-                <SelectItem key={d.domain} value={d.domain}>
-                  {d.domain}
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    {d.count}
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+      <div className="px-3 py-2">
+        <Select
+          value={domain ?? "__all__"}
+          onValueChange={(v) => setDomain(v === "__all__" ? null : v)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Todos los dominios" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">Todos los dominios</SelectItem>
+            {domains.map((d) => (
+              <SelectItem key={d.domain} value={d.domain}>
+                {d.domain}
+                <span className="ml-auto text-xs text-muted-foreground">
+                  {d.count}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <nav className="flex-1 space-y-1 px-2 py-3">
         {navItems.map((item) => {
