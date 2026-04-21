@@ -1,0 +1,10 @@
+services:
+  ctrbox:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_PATH=/app/data/ctrbox.db
+      - BROWSER_HEADLESS=true

@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+.claude
+data/*.db
+data/profiles/*
+*.md
+.env
+.env.local
