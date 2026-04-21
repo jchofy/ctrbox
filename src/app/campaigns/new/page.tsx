@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useDomain } from "@/hooks/use-domain";
 import {
   Card,
   CardContent,
@@ -21,10 +22,11 @@ import { Separator } from "@/components/ui/separator";
 
 export default function NewCampaignPage() {
   const router = useRouter();
+  const { domain: selectedDomain } = useDomain();
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     name: "",
-    domain: "",
+    domain: selectedDomain ?? "",
     dailyVisitTarget: 50,
     minVisitDuration: 30,
     maxVisitDuration: 120,

@@ -16,8 +16,11 @@ const createCampaignSchema = z.object({
   warmupSearches: z.boolean().default(true),
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const domain = request.nextUrl.searchParams.get("domain");
+
   const allCampaigns = await db.query.campaigns.findMany({
+    where: domain ? eq(schema.campaigns.domain, domain) : undefined,
     with: { keywords: true },
     orderBy: (c, { desc }) => [desc(c.createdAt)],
   });

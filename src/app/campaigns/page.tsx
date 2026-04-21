@@ -28,6 +28,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useCampaigns, type Campaign } from "@/hooks/use-campaigns";
+import { useDomain } from "@/hooks/use-domain";
 import { cn } from "@/lib/utils";
 
 const statusConfig: Record<
@@ -49,7 +50,8 @@ const statusConfig: Record<
 };
 
 export default function CampaignsPage() {
-  const { campaigns, loading, refetch } = useCampaigns();
+  const { domain } = useDomain();
+  const { campaigns, loading, refetch } = useCampaigns(domain);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   async function handleDelete(id: string) {

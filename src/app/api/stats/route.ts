@@ -1,21 +1,35 @@
 import { db, schema } from "@/db";
-import { eq, and, gte, sql, desc } from "drizzle-orm";
-import { NextResponse } from "next/server";
+import { eq, and, gte, sql, desc, inArray } from "drizzle-orm";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const domain = request.nextUrl.searchParams.get("domain");
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayStr = today.toISOString();
 
-  // Total campaigns
-  const allCampaigns = await db.query.campaigns.findMany();
+  // Total campaigns (filtered by domain if specified)
+  const allCampaigns = await db.query.campaigns.findMany({
+    where: domain ? eq(schema.campaigns.domain, domain) : undefined,
+  });
   const totalCampaigns = allCampaigns.length;
   const activeCampaigns = allCampaigns.filter((c) => c.status === "active").length;
 
-  // Today's visits
-  const todayVisits = await db.query.visits.findMany({
-    where: gte(schema.visits.createdAt, todayStr),
-  });
+  // Campaign IDs for filtering visits
+  const campaignIds = allCampaigns.map((c) => c.id);
+
+  // Today's visits (filtered by campaign if domain is set)
+  const todayVisits = campaignIds.length === 0 && domain
+    ? []
+    : await db.query.visits.findMany({
+        where: domain && campaignIds.length > 0
+          ? and(
+              gte(schema.visits.createdAt, todayStr),
+              inArray(schema.visits.campaignId, campaignIds)
+            )
+          : gte(schema.visits.createdAt, todayStr),
+      });
 
   const totalVisitsToday = todayVisits.length;
   const successfulVisitsToday = todayVisits.filter((v) => v.status === "success").length;
@@ -51,6 +65,9 @@ export async function GET() {
 
   // Recent visits (last 20)
   const recentVisitsRaw = await db.query.visits.findMany({
+    where: domain && campaignIds.length > 0
+      ? inArray(schema.visits.campaignId, campaignIds)
+      : undefined,
     orderBy: desc(schema.visits.createdAt),
     limit: 20,
     with: { keyword: true },

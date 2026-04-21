@@ -16,6 +16,14 @@ import {
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useDomain } from "@/hooks/use-domain";
 
 const navItems = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
@@ -26,6 +34,7 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { domain, setDomain, domains } = useDomain();
   const [workerStatus, setWorkerStatus] = useState<string>("stopped");
 
   const fetchStatus = useCallback(async () => {
@@ -82,6 +91,30 @@ export function Sidebar() {
       </div>
 
       <Separator />
+
+      {domains.length > 0 && (
+        <div className="px-3 py-2">
+          <Select
+            value={domain ?? "__all__"}
+            onValueChange={(v) => setDomain(v === "__all__" ? null : v)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Todos los dominios" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">Todos los dominios</SelectItem>
+              {domains.map((d) => (
+                <SelectItem key={d.domain} value={d.domain}>
+                  {d.domain}
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {d.count}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <nav className="flex-1 space-y-1 px-2 py-3">
         {navItems.map((item) => {

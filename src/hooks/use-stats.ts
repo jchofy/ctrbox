@@ -23,21 +23,22 @@ export interface Stats {
   }[];
 }
 
-export function useStats() {
+export function useStats(domain?: string | null) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchStats = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/stats");
+      const params = domain ? `?domain=${encodeURIComponent(domain)}` : "";
+      const res = await fetch(`/api/stats${params}`);
       if (res.ok) {
         setStats(await res.json());
       }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
     fetchStats();

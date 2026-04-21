@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useStats } from "@/hooks/use-stats";
+import { useDomain } from "@/hooks/use-domain";
 import {
   BarChart,
   Bar,
@@ -89,7 +90,8 @@ function statusColor(status: string) {
 }
 
 export default function DashboardPage() {
-  const { stats, loading } = useStats();
+  const { domain } = useDomain();
+  const { stats, loading } = useStats(domain);
 
   const successRate =
     stats && stats.totalVisitsToday > 0

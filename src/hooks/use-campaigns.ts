@@ -29,20 +29,21 @@ export interface Campaign {
   keywords: Keyword[];
 }
 
-export function useCampaigns() {
+export function useCampaigns(domain?: string | null) {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchCampaigns = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/campaigns");
+      const params = domain ? `?domain=${encodeURIComponent(domain)}` : "";
+      const res = await fetch(`/api/campaigns${params}`);
       const data = await res.json();
       setCampaigns(data);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
     fetchCampaigns();
