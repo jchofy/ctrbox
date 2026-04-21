@@ -9,8 +9,10 @@ import {
 } from "react";
 
 interface DomainInfo {
+  id: string;
   domain: string;
   count: number;
+  createdAt: string;
 }
 
 interface DomainContextValue {
@@ -18,6 +20,7 @@ interface DomainContextValue {
   setDomain: (domain: string | null) => void;
   domains: DomainInfo[];
   loading: boolean;
+  refetchDomains: () => Promise<void>;
 }
 
 const DomainContext = createContext<DomainContextValue | null>(null);
@@ -67,7 +70,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   }, [fetchDomains]);
 
   return (
-    <DomainContext.Provider value={{ domain, setDomain, domains, loading }}>
+    <DomainContext.Provider value={{ domain, setDomain, domains, loading, refetchDomains: fetchDomains }}>
       {children}
     </DomainContext.Provider>
   );

@@ -102,6 +102,14 @@ export const proxies = sqliteTable("proxies", {
     .$defaultFn(() => new Date().toISOString()),
 });
 
+export const domains = sqliteTable("domains", {
+  id: text("id").primaryKey(),
+  domain: text("domain").notNull().unique(),
+  createdAt: text("created_at")
+    .notNull()
+    .$defaultFn(() => new Date().toISOString()),
+});
+
 export const settings = sqliteTable("settings", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),

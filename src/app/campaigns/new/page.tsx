@@ -10,6 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useDomain } from "@/hooks/use-domain";
 import {
   Card,
@@ -22,7 +29,7 @@ import { Separator } from "@/components/ui/separator";
 
 export default function NewCampaignPage() {
   const router = useRouter();
-  const { domain: selectedDomain } = useDomain();
+  const { domain: selectedDomain, domains } = useDomain();
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -109,13 +116,27 @@ export default function NewCampaignPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="domain">Dominio</Label>
-                <Input
-                  id="domain"
-                  placeholder="ejemplo.com"
-                  value={form.domain}
-                  onChange={(e) => updateField("domain", e.target.value)}
-                  required
-                />
+                {domains.length > 0 ? (
+                  <Select
+                    value={form.domain}
+                    onValueChange={(v) => v && updateField("domain", v)}
+                  >
+                    <SelectTrigger id="domain" className="w-full">
+                      <SelectValue placeholder="Selecciona un dominio" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {domains.map((d) => (
+                        <SelectItem key={d.id} value={d.domain}>
+                          {d.domain}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-sm text-muted-foreground pt-2">
+                    No hay dominios registrados. Añade uno desde el sidebar.
+                  </p>
+                )}
               </div>
             </div>
             <div className="space-y-2">

@@ -5,6 +5,7 @@ import * as relations from "./relations";
 import { existsSync, mkdirSync } from "fs";
 import { dirname } from "path";
 import { DEFAULT_SETTINGS } from "@/lib/constants";
+import { randomUUID } from "crypto";
 
 const allSchema = { ...schema, ...relations };
 
@@ -74,6 +75,12 @@ function createTables(sqlite: InstanceType<typeof Database>) {
       created_at TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS domains (
+      id TEXT PRIMARY KEY,
+      domain TEXT NOT NULL UNIQUE,
+      created_at TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL,
@@ -86,6 +93,19 @@ function seedSettings(db: BetterSQLite3Database<typeof allSchema>) {
   for (const [key, { value, description }] of Object.entries(DEFAULT_SETTINGS)) {
     db.insert(schema.settings)
       .values({ key, value, description })
+      .onConflictDoNothing()
+      .run();
+  }
+}
+
+function seedDomainsFromCampaigns(db: BetterSQLite3Database<typeof allSchema>) {
+  const rows = db
+    .selectDistinct({ domain: schema.campaigns.domain })
+    .from(schema.campaigns)
+    .all();
+  for (const row of rows) {
+    db.insert(schema.domains)
+      .values({ id: randomUUID(), domain: row.domain, createdAt: new Date().toISOString() })
       .onConflictDoNothing()
       .run();
   }
@@ -113,6 +133,9 @@ function getDb() {
 
   // Seed default settings
   seedSettings(_db);
+
+  // Seed domains from existing campaigns
+  seedDomainsFromCampaigns(_db);
 
   return _db;
 }

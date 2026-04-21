@@ -12,6 +12,7 @@ import {
   Play,
   Square,
   Pause,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -23,7 +24,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useDomain } from "@/hooks/use-domain";
+import { toast } from "sonner";
 
 const navItems = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
@@ -34,8 +46,11 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { domain, setDomain, domains } = useDomain();
+  const { domain, setDomain, domains, refetchDomains } = useDomain();
   const [workerStatus, setWorkerStatus] = useState<string>("stopped");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [newDomain, setNewDomain] = useState("");
+  const [adding, setAdding] = useState(false);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -67,6 +82,34 @@ export function Sidebar() {
     }
   }
 
+  async function handleAddDomain(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newDomain.trim()) return;
+
+    setAdding(true);
+    try {
+      const res = await fetch("/api/domains", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain: newDomain }),
+      });
+
+      if (res.ok) {
+        toast.success("Dominio añadido");
+        setNewDomain("");
+        setDialogOpen(false);
+        await refetchDomains();
+      } else {
+        const data = await res.json().catch(() => null);
+        toast.error(data?.error ?? "Error al añadir dominio");
+      }
+    } catch {
+      toast.error("Error de conexión");
+    } finally {
+      setAdding(false);
+    }
+  }
+
   const statusColor =
     workerStatus === "running"
       ? "bg-green-500"
@@ -93,25 +136,63 @@ export function Sidebar() {
       <Separator />
 
       <div className="px-3 py-2">
-        <Select
-          value={domain ?? "__all__"}
-          onValueChange={(v) => setDomain(v === "__all__" ? null : v)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Todos los dominios" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">Todos los dominios</SelectItem>
-            {domains.map((d) => (
-              <SelectItem key={d.domain} value={d.domain}>
-                {d.domain}
-                <span className="ml-auto text-xs text-muted-foreground">
-                  {d.count}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-1">
+          <Select
+            value={domain ?? "__all__"}
+            onValueChange={(v) => setDomain(v === "__all__" ? null : v)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Todos los dominios" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">Todos los dominios</SelectItem>
+              {domains.map((d) => (
+                <SelectItem key={d.domain} value={d.domain}>
+                  {d.domain}
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {d.count}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="shrink-0"
+              onClick={() => setDialogOpen(true)}
+            >
+              <Plus className="size-4" />
+            </Button>
+            <DialogContent>
+              <form onSubmit={handleAddDomain}>
+                <DialogHeader>
+                  <DialogTitle>Añadir dominio</DialogTitle>
+                  <DialogDescription>
+                    Introduce el dominio que quieres registrar.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                  <Label htmlFor="new-domain">Dominio</Label>
+                  <Input
+                    id="new-domain"
+                    placeholder="ejemplo.com"
+                    value={newDomain}
+                    onChange={(e) => setNewDomain(e.target.value)}
+                    className="mt-1.5"
+                    autoFocus
+                  />
+                </div>
+                <DialogFooter>
+                  <Button type="submit" disabled={adding || !newDomain.trim()}>
+                    {adding ? "Añadiendo..." : "Añadir"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <nav className="flex-1 space-y-1 px-2 py-3">
